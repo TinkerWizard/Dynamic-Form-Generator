@@ -21,10 +21,9 @@ Before you begin, ensure you have met the following requirements:
 ### Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/your-repo-name.git
-cd your-repo-name
+https://github.com/TinkerWizard/Dynamic-Form-Generator.git
+cd Dynamic-Form-Generator
 
-```bash
 npm install
 npm run dev
 npm run build

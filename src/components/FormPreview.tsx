@@ -5,7 +5,7 @@ import {
     FormSchema,
     Field,
     type TextField,
-    TextareaField,  
+    TextareaField,
     type FileField,
     type SelectField,
     type CheckboxField,
@@ -52,7 +52,7 @@ const TextField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }
 const TextArea: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const textareaField = field as TextareaField;
     const hasError = Boolean(errors[field.id]);
-    
+
     return (
         <textarea
             id={field.id}
@@ -75,7 +75,7 @@ const TextArea: React.FC<FieldProps> = ({ field, register, errors, isDarkMode })
 const FileInput: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const fileField = field as FileField;
     const hasError = Boolean(errors[field.id]);
-    
+
     return (
         <input
             type="file"
@@ -94,7 +94,7 @@ const FileInput: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }
 const SelectField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const selectField = field as SelectField;
     const hasError = Boolean(errors[field.id]);
-    
+
     return (
         <select
             id={field.id}
@@ -160,7 +160,7 @@ const RadioField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode 
     const radioField = field as RadioField;
     const hasError = Boolean(errors[field.id]);
     const errorClasses = hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : '';
-    
+
     return (
         <div className={`${radioField.inline ? 'flex space-x-4' : 'space-y-2'}`}>
             {radioField.options.map((option: any) => (
@@ -184,7 +184,7 @@ const RadioField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode 
 const NumberField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const numberField = field as NumberField;
     const hasError = Boolean(errors[field.id]);
-    
+
     return (
         <input
             type="number"
@@ -205,7 +205,7 @@ const NumberField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode
 const DateField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const dateField = field as DateField;
     const hasError = Boolean(errors[field.id]);
-    
+
     return (
         <input
             type="date"
@@ -284,8 +284,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
         const generatedCode = `
             <form className="space-y-6">
                 ${schema.fields.map((field) => {
-                    if (field.type === "text" || field.type === "email") {
-                        return `
+            if (field.type === "text" || field.type === "email") {
+                return `
                             <div className="space-y-2">
                                 <label htmlFor="${field.id}" className="block font-medium">
                                     ${field.label}${field.required ? ' *' : ''}
@@ -298,10 +298,10 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
                                 />
                             </div>
                         `;
-                    }
-                    if (field.type === "textarea") {
-                        const textareaField = field as TextareaField;
-                        return `
+            }
+            if (field.type === "textarea") {
+                const textareaField = field as TextareaField;
+                return `
                             <div className="space-y-2">
                                 <label htmlFor="${field.id}" className="block font-medium">
                                     ${field.label}${field.required ? ' *' : ''}
@@ -314,10 +314,10 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
                                 ></textarea>
                             </div>
                         `;
-                    }
-                    if (field.type === "select") {
-                        const selectField = field as SelectField;
-                        return `
+            }
+            if (field.type === "select") {
+                const selectField = field as SelectField;
+                return `
                             <div className="space-y-2">
                                 <label htmlFor="${field.id}" className="block font-medium">
                                     ${field.label}${field.required ? ' *' : ''}
@@ -327,14 +327,14 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
                                     className="w-full border rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-[#EC5990]"
                                 >
                                     ${selectField.options.map(option =>
-                                        `<option value="${option.value}">${option.label}</option>`
-                                    ).join('\n')}
+                    `<option value="${option.value}">${option.label}</option>`
+                ).join('\n')}
                                 </select>
                             </div>
                         `;
-                    }
-                    return "";
-                }).join("\n")}
+            }
+            return "";
+        }).join("\n")}
             </form>
         `;
 
@@ -379,12 +379,49 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
         }
     };
 
+    const downloadAsJson = (data: any) => {
+        try {
+            // Convert data to a formatted JSON string
+            const jsonString = JSON.stringify(data, null, 2);
+
+            // Create a Blob with the JSON data
+            const blob = new Blob([jsonString], { type: 'application/json' });
+
+            // Create a link element
+            const link = document.createElement('a');
+
+            // Create a URL for the blob
+            const url = URL.createObjectURL(blob);
+
+            // Set link attributes
+            link.href = url;
+            link.download = 'form-data.json';
+
+            // Append to body, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Clean up the URL
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download failed:', error);
+            alert('Failed to download JSON. Check console for details.');
+        }
+    };
+
     const onSubmit = async (data: any) => {
         try {
             if (schema?.onSubmit) {
                 await schema.onSubmit(data);
             }
             console.log("Form Submitted", data);
+
+            // Ensure download happens after potential async operations
+            setTimeout(() => {
+                downloadAsJson(data);
+            }, 0);
+
             alert("Form submitted successfully!");
         } catch (error) {
             console.error("Form submission error:", error);
@@ -457,7 +494,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
                 )}
 
                 <form onSubmit={handleSubmit(onSubmit)} className={`grid ${gridClass} ${spacingClass}`}>
-                    {schema.fields.map((field) => (
+                    {(schema?.fields || []).map((field) => (
                         <div key={field.id} className="space-y-2">
                             {field.type !== 'checkbox' && (
                                 <label
@@ -468,18 +505,15 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
                                     {field.required && <span className="text-red-500 ml-1">*</span>}
                                 </label>
                             )}
-
                             {field.description && (
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                                     {field.description}
                                 </p>
                             )}
-
                             {renderField(field)}
-
                             {errors[field.id] && (
                                 <p className="text-sm text-red-500 mt-1">
-                                    {field.validation?.message || "This field is required"}
+                                    {field.validation?.message ?? "This field is required"}
                                 </p>
                             )}
                         </div>
@@ -494,7 +528,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
                                 focus:outline-none focus:ring-2 focus:ring-[#EC5990] focus:ring-offset-2
                                 dark:focus:ring-offset-gray-800"
                         >
-                            {schema.submitButtonText || 'Submit'}
+                            {schema.submitButtonText ?? 'Submit'}
                         </button>
 
                         {schema.showReset && (
@@ -508,7 +542,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
                                     focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2
                                     dark:focus:ring-offset-gray-800"
                             >
-                                {schema.resetButtonText || 'Reset'}
+                                {schema.resetButtonText ?? 'Reset'}
                             </button>
                         )}
                     </div>
