@@ -40,7 +40,6 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
   className = "",
 }) => {
   const { isDarkMode } = useTheme();
-  const [isJsonValid, setIsJsonValid] = useState(false);
   const [copied, setCopied] = useState(false);
   const [currentValue, setCurrentValue] = useState(jsonSchema);
 
