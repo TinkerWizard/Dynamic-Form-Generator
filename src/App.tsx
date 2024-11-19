@@ -1,5 +1,3 @@
-"use client";
-
 import { useTheme } from "./utils/ThemeContext";
 import FormPreview from "./components/FormPreview";
 import JsonEditor from "./components/JsonEditor";
@@ -7,11 +5,30 @@ import ThemeToggle from "./components/ThemeToggle";
 import './tailwind.css';
 import { FormSchema } from "./types/schema";
 import { useState, useCallback } from "react";
-import { Box, Stack } from '@mui/material';
+
 interface ParsedState {
   schema: FormSchema | null;
   error: string | null;
 }
+
+const EditorSection = ({ 
+  title, 
+  children 
+}: { 
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <div className="space-y-4">
+    <h2 className="text-xl font-bold">{title}</h2>
+    {children}
+  </div>
+);
+
+const ErrorMessage = ({ message }: { message: string }) => (
+  <div className="p-4 bg-red-100 text-red-700 rounded-md">
+    {message}
+  </div>
+);
 
 const App = () => {
   const { isDarkMode } = useTheme();
@@ -38,34 +55,60 @@ const App = () => {
     setParsedState(parseJsonSchema(newJson));
   }, [parseJsonSchema]);
 
+  const mainClassName = `min-h-screen p-6 ${
+    isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
+  }`;
+
   return (
-    <Stack spacing={2} direction="column" className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`} sx={{ width: "100vw", p: 3 }}>
-      <ThemeToggle />
-      <Stack direction="row">
-        <Box sx={{ width: "50vw" }} className="space-y-4">
-          <h2 className="text-xl font-bold">JSON Schema Editor</h2>
-          {jsonInput != null
-            &&
-            <JsonEditor
-              value={jsonInput}
-              onChange={handleJsonChange}
-              error={parsedState.error}
-            />
-          }
-        </Box>
-
-        <Box sx={{ width: "50vw" }} className="space-y-4">
-          <h2 className="text-xl font-bold">Form Preview</h2>
-          {parsedState.schema && <FormPreview schema={parsedState.schema} />}
-          {parsedState.error && (
-            <div className="p-4 bg-red-100 text-red-700 rounded-md">
-              {parsedState.error}
+    <div>
+      {/* Desktop */}
+      <div className="hidden xl:block">
+        <div className={`${mainClassName} flex flex-col w-full`}>
+          <ThemeToggle />
+          <div className="flex flex-row gap-4">
+            <div className="w-1/2">
+              <EditorSection title="JSON Schema Editor">
+                {jsonInput != null && (
+                  <JsonEditor
+                    jsonSchema={jsonInput}
+                    onChange={handleJsonChange}
+                    error={parsedState.error}
+                  />
+                )}
+              </EditorSection>
             </div>
-          )}
-        </Box>
-      </Stack>
+            <div className="w-1/2">
+              <EditorSection title="Form Preview">
+                {parsedState.schema && <FormPreview schema={parsedState.schema} />}
+                {parsedState.error && <ErrorMessage message={parsedState.error} />}
+              </EditorSection>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    </Stack>
+      {/* Mobile */}
+      <div className="block sm:hidden">
+        <div className={`${mainClassName} flex flex-col w-full`}>
+          <ThemeToggle />
+          <div className="flex flex-col gap-4">
+            <EditorSection title="JSON Schema Editor">
+              {jsonInput != null && (
+                <JsonEditor
+                  jsonSchema={jsonInput}
+                  onChange={handleJsonChange}
+                  error={parsedState.error}
+                />
+              )}
+            </EditorSection>
+            <EditorSection title="Form Preview">
+              {parsedState.schema && <FormPreview schema={parsedState.schema} />}
+              {parsedState.error && <ErrorMessage message={parsedState.error} />}
+            </EditorSection>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

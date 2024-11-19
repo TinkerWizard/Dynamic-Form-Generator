@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from "react";
-import Editor, { EditorProps, Monaco } from "@monaco-editor/react";
+import Editor, { Monaco } from "@monaco-editor/react";
 import { useTheme } from "../utils/ThemeContext";
 import { editor } from "monaco-editor";
 
@@ -48,18 +48,13 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
   }), [minimapEnabled, readOnly]);
 
   // Handle editor mounting
-  const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+  const handleEditorDidMount = useCallback((_editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     // Configure JSON language features
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
       validate: true,
       schemas: [],
       allowComments: false,
       schemaValidation: 'error',
-    });
-
-    // Add keyboard shortcuts
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-      editor.getAction('editor.action.formatDocument').run();
     });
   }, []);
 
@@ -70,10 +65,10 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
       if (value) {
         JSON.parse(value);
       }
-      onChange(value || "");
+      onChange(value ?? "");
     } catch (e) {
       // Invalid JSON will be handled by the error prop
-      onChange(value || "");
+      onChange(value ?? "");
     }
   }, [onChange]);
 
@@ -98,6 +93,7 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
 
       <div className="relative rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
         <Editor
+          data-testId="editor"
           height={height}
           language="json"
           theme={isDarkMode ? "vs-dark" : "vs-light"}
@@ -128,33 +124,3 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
 };
 
 export default React.memo(JsonEditor);
-
-// Usage Example:
-/*
-import JsonEditor from './JsonEditor';
-
-const MyComponent = () => {
-  const [jsonValue, setJsonValue] = useState("{\n  \"key\": \"value\"\n}");
-  const [error, setError] = useState<string | null>(null);
-
-  const handleChange = (value: string) => {
-    try {
-      JSON.parse(value);
-      setError(null);
-    } catch (e) {
-      setError("Invalid JSON syntax");
-    }
-    setJsonValue(value);
-  };
-
-  return (
-    <JsonEditor
-      jsonSchema={jsonValue}
-      onChange={handleChange}
-      error={error}
-      minimapEnabled={true}
-      height="500px"
-    />
-  );
-};
-*/

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTheme } from "../utils/ThemeContext";
 import {
@@ -12,10 +12,8 @@ import {
     type RadioField,
     type NumberField,
     type DateField,
-    ValidationRule
 } from "../types/schema";
 import { AlertCircle, Copy, CheckCircle } from "lucide-react";
-import { useState } from "react";
 
 interface FormPreviewProps {
     schema: FormSchema | null;
@@ -37,7 +35,15 @@ const TextField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }
             placeholder={textField.placeholder}
             disabled={textField.disabled}
             autoComplete={textField.autocomplete}
-            className={`${getFieldClasses(isDarkMode)} ${textField.className || ''}`}
+            className={`
+                ${getFieldClasses(isDarkMode)} 
+                ${textField.className ?? ''} 
+                ${errors[field.id] ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+            `}
+            // You can also add aria-invalid for accessibility
+            aria-invalid={errors[field.id] ? 'true' : 'false'}
+            // Optional: Add error message as title attribute for tooltip
+            title={errors[field.id]?.message?.toString()}
             {...register(field.id, getValidationRules(field))}
         />
     );
@@ -45,6 +51,8 @@ const TextField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }
 
 const TextArea: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const textareaField = field as TextareaField;
+    const hasError = Boolean(errors[field.id]);
+    
     return (
         <textarea
             id={field.id}
@@ -52,14 +60,22 @@ const TextArea: React.FC<FieldProps> = ({ field, register, errors, isDarkMode })
             cols={textareaField.cols}
             placeholder={textareaField.placeholder}
             disabled={textareaField.disabled}
-            className={`${getFieldClasses(isDarkMode)} ${textareaField.className || ''} ${textareaField.resizable ? 'resize' : 'resize-none'}`}
+            className={`
+                ${getFieldClasses(isDarkMode)} 
+                ${textareaField.className ?? ''} 
+                ${textareaField.resizable ? 'resize' : 'resize-none'}
+                ${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+            `}
+            aria-invalid={hasError}
+            title={errors[field.id]?.message?.toString()}
             {...register(field.id, getValidationRules(field))}
         />
     );
 };
-
 const FileInput: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const fileField = field as FileField;
+    const hasError = Boolean(errors[field.id]);
+    
     return (
         <input
             type="file"
@@ -67,7 +83,9 @@ const FileInput: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }
             accept={fileField.accept}
             multiple={fileField.multiple}
             disabled={fileField.disabled}
-            className={`${getFieldClasses(isDarkMode)} ${fileField.className || ''}`}
+            className={`${getFieldClasses(isDarkMode)} ${fileField.className || ''} ${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+            aria-invalid={hasError}
+            title={errors[field.id]?.message?.toString()}
             {...register(field.id, getValidationRules(field))}
         />
     );
@@ -75,12 +93,16 @@ const FileInput: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }
 
 const SelectField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const selectField = field as SelectField;
+    const hasError = Boolean(errors[field.id]);
+    
     return (
         <select
             id={field.id}
             multiple={selectField.multiple}
             disabled={selectField.disabled}
-            className={`${getFieldClasses(isDarkMode)} ${selectField.className || ''}`}
+            className={`${getFieldClasses(isDarkMode)} ${selectField.className || ''} ${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+            aria-invalid={hasError}
+            title={errors[field.id]?.message?.toString()}
             {...register(field.id, getValidationRules(field))}
         >
             {selectField.options.map((option: any) => (
@@ -94,6 +116,8 @@ const SelectField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode
 
 const CheckboxField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const checkboxField = field as CheckboxField;
+    const hasError = Boolean(errors[field.id]);
+    const errorClasses = hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : '';
 
     if (checkboxField.options) {
         return (
@@ -104,7 +128,9 @@ const CheckboxField: React.FC<FieldProps> = ({ field, register, errors, isDarkMo
                             type="checkbox"
                             value={option.value}
                             disabled={option.disabled || checkboxField.disabled}
-                            className={`${getCheckboxClasses(isDarkMode)} ${checkboxField.className || ''}`}
+                            className={`${getCheckboxClasses(isDarkMode)} ${checkboxField.className || ''} ${errorClasses}`}
+                            aria-invalid={hasError}
+                            title={errors[field.id]?.message?.toString()}
                             {...register(field.id, getValidationRules(field))}
                         />
                         <span className={isDarkMode ? 'text-white' : 'text-black'}>{option.label}</span>
@@ -120,7 +146,9 @@ const CheckboxField: React.FC<FieldProps> = ({ field, register, errors, isDarkMo
                 type="checkbox"
                 disabled={checkboxField.disabled}
                 checked={checkboxField.checked}
-                className={`${getCheckboxClasses(isDarkMode)} ${checkboxField.className || ''}`}
+                className={`${getCheckboxClasses(isDarkMode)} ${checkboxField.className || ''} ${errorClasses}`}
+                aria-invalid={hasError}
+                title={errors[field.id]?.message?.toString()}
                 {...register(field.id, getValidationRules(field))}
             />
             <span className={isDarkMode ? 'text-white' : 'text-black'}>{field.label}</span>
@@ -130,6 +158,9 @@ const CheckboxField: React.FC<FieldProps> = ({ field, register, errors, isDarkMo
 
 const RadioField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const radioField = field as RadioField;
+    const hasError = Boolean(errors[field.id]);
+    const errorClasses = hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : '';
+    
     return (
         <div className={`${radioField.inline ? 'flex space-x-4' : 'space-y-2'}`}>
             {radioField.options.map((option: any) => (
@@ -138,7 +169,9 @@ const RadioField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode 
                         type="radio"
                         value={option.value}
                         disabled={option.disabled || radioField.disabled}
-                        className={`${getRadioClasses(isDarkMode)} ${radioField.className || ''}`}
+                        className={`${getRadioClasses(isDarkMode)} ${radioField.className || ''} ${errorClasses}`}
+                        aria-invalid={hasError}
+                        title={errors[field.id]?.message?.toString()}
                         {...register(field.id, getValidationRules(field))}
                     />
                     <span className={isDarkMode ? 'text-white' : 'text-black'}>{option.label}</span>
@@ -150,6 +183,8 @@ const RadioField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode 
 
 const NumberField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const numberField = field as NumberField;
+    const hasError = Boolean(errors[field.id]);
+    
     return (
         <input
             type="number"
@@ -159,7 +194,9 @@ const NumberField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode
             step={numberField.step}
             disabled={numberField.disabled}
             placeholder={numberField.placeholder}
-            className={`${getFieldClasses(isDarkMode)} ${numberField.className || ''}`}
+            className={`${getFieldClasses(isDarkMode)} ${numberField.className || ''} ${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+            aria-invalid={hasError}
+            title={errors[field.id]?.message?.toString()}
             {...register(field.id, getValidationRules(field))}
         />
     );
@@ -167,6 +204,8 @@ const NumberField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode
 
 const DateField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }) => {
     const dateField = field as DateField;
+    const hasError = Boolean(errors[field.id]);
+    
     return (
         <input
             type="date"
@@ -174,12 +213,13 @@ const DateField: React.FC<FieldProps> = ({ field, register, errors, isDarkMode }
             min={dateField.minDate}
             max={dateField.maxDate}
             disabled={dateField.disabled}
-            className={`${getFieldClasses(isDarkMode)} ${dateField.className || ''}`}
+            className={`${getFieldClasses(isDarkMode)} ${dateField.className || ''} ${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+            aria-invalid={hasError}
+            title={errors[field.id]?.message?.toString()}
             {...register(field.id, getValidationRules(field))}
         />
     );
 };
-
 const getFieldClasses = (isDarkMode: boolean) => `
     w-full border rounded-lg p-2.5
     focus:outline-none focus:ring-2 focus:ring-[#EC5990] 
@@ -319,9 +359,6 @@ const FormPreview: React.FC<FormPreviewProps> = ({ schema }) => {
         switch (field.type) {
             case "text":
             case "email":
-            case "password":
-            case "tel":
-            case "url":
                 return <TextField {...commonProps} />;
             case "textarea":
                 return <TextArea {...commonProps} />;
